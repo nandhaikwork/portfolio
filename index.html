@@ -491,6 +491,28 @@
   }
   #chat-send:hover { background: #33eeff; }
   #chat-send:disabled { background: var(--muted); opacity: 0.5; }
+  #chat-mic {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 6px; width: 36px; height: 36px;
+    font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  #chat-mic:hover { color: var(--accent); border-color: rgba(0,229,255,0.4); }
+  #chat-mic.listening {
+    color: #ff4466; border-color: #ff4466;
+    box-shadow: 0 0 10px rgba(255,68,102,0.35);
+    animation: pulse-mic 0.9s ease-in-out infinite;
+  }
+  @keyframes pulse-mic { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  .chat-avatar.speaking { animation: avatar-glow 0.7s ease-in-out infinite alternate; }
+  @keyframes avatar-glow { from{box-shadow:0 0 0 0 rgba(0,229,255,0.3)} to{box-shadow:0 0 0 6px rgba(0,229,255,0)} }
+  #chat-mute {
+    background: none; border: none; color: var(--muted);
+    font-size: 1rem; cursor: pointer; padding: 0.2rem 0.3rem;
+    line-height: 1; transition: color 0.2s; flex-shrink: 0;
+  }
+  #chat-mute:hover { color: var(--accent); }
+  #chat-mute.muted { color: #ff4466; }
 </style>
 </head>
 <body>
@@ -798,11 +820,23 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
 
 <div id="chat-window" class="hidden">
   <div id="chat-header">
-    <div class="chat-avatar"><svg viewBox="0 0 34 34" width="34" height="34" xmlns="http://www.w3.org/2000/svg"><rect width="34" height="34" fill="#0a1628"/><line x1="17" y1="4" x2="17" y2="9" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/><circle cx="17" cy="3.5" r="1.8" fill="#00e5ff"/><rect x="8" y="9" width="18" height="13" rx="3" fill="#0f2035" stroke="#00e5ff" stroke-width="1"/><rect x="11" y="13" width="4" height="3" rx="1" fill="#00e5ff" opacity="0.9"/><rect x="19" y="13" width="4" height="3" rx="1" fill="#00e5ff" opacity="0.9"/><rect x="12" y="18" width="10" height="1.5" rx="0.75" fill="#00e5ff" opacity="0.6"/><rect x="11" y="23" width="12" height="7" rx="2" fill="#0f2035" stroke="#00e5ff" stroke-width="0.8"/><circle cx="17" cy="26.5" r="1.5" fill="#00e5ff" opacity="0.7"/></svg></div>
+    <div class="chat-avatar"><svg viewBox="0 0 36 36" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+  <rect width="36" height="36" rx="10" fill="#0a1628"/>
+  <!-- outer hex ring -->
+  <polygon points="18,4 30,11 30,25 18,32 6,25 6,11" fill="none" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+  <!-- inner hex -->
+  <polygon points="18,9 26,13.5 26,22.5 18,27 10,22.5 10,13.5" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.5)" stroke-width="1"/>
+  <!-- eyes -->
+  <rect x="13" y="15" width="3" height="3" rx="1" fill="rgba(0,229,255,0.9)"/>
+  <rect x="20" y="15" width="3" height="3" rx="1" fill="rgba(0,229,255,0.9)"/>
+  <!-- mouth -->
+  <path d="M14 21 Q18 24 22 21" fill="none" stroke="rgba(0,229,255,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+</svg></div>
     <div id="chat-header-text">
       <div id="chat-header-name">AIxita</div>
       <div id="chat-header-sub">● Ask me anything about her work</div>
     </div>
+    <button id="chat-mute" title="Mute voice">🔊</button>
     <button id="chat-close">✕</button>
   </div>
   <div id="chat-messages"></div>
@@ -813,6 +847,7 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
     <button class="chat-chip">Is she open to work?</button>
   </div>
   <div id="chat-input-row">
+    <button id="chat-mic" title="Speak to AIxita">🎙</button>
     <input id="chat-input" type="text" placeholder="Ask AIxita..." maxlength="200"/>
     <button id="chat-send">➤</button>
   </div>
@@ -824,26 +859,37 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
   // ─────────────────────────────────────────────
   // SYSTEM PROMPT
   // ─────────────────────────────────────────────
-  const SYSTEM = `You are AIxita — Akshita Nandhaik's portfolio assistant. Sharp, warm, and occasionally witty.
+  const SYSTEM = `You are AIxita — Akshita Nandhaik's witty, hilarious, slightly chaotic portfolio assistant. Think: that one friend who is equal parts funny and actually useful.
 
-TONE RULES:
-- Professional questions (experience, projects, skills, roles, impact, tools) → answer directly and confidently. No fluff, no filler. Just crisp, clear facts.
-- Personal questions (hobbies, hometown, fun facts, jokes, personal life) → be warm and playful. One dry joke when it fits naturally. Never forced.
-- Keep every reply to 2–3 SHORT sentences. No chunky paragraphs.
-- Use emojis sparingly — max 1 per reply, and only when genuinely useful. Never a string of emojis.
-- Never start with "Great question!" or any sycophantic opener.
-- Never say "data data data" — Akshita is a STRATEGIC thinker, product mind, and business problem-solver first. Position her broadly across strategy, product, consulting, and analytics.
+TONE — TWO MODES:
 
-HUMOUR STYLE (personal questions only):
-- Dry wit, self-aware, grounded. India-relevant when it fits naturally.
-- Example for hometown: "She's from Shimla — where the mountains are high, the internet is slow, and the work ethic somehow turned out exceptional."
-- Example joke for "tell me a joke": "Why do Indian managers love dashboards? Because they can finally say 'the data speaks for itself' without speaking themselves."
-- If a joke doesn't land naturally, skip it. Never force it.
+MODE 1 — PROFESSIONAL (career, experience, skills, projects, impact, tools, roles):
+- Crisp, confident, factual. No filler. 2–3 short sentences max.
+- Emojis: minimal, only if it genuinely fits.
 
-GREETING RESPONSE (ONLY for pure greetings — "hi", "hello", "hey", etc. — nothing else):
-"Well, look who's curious. I'm AIxita — Akshita's portfolio assistant and self-appointed hype department. She untangles messy business problems, builds strategies that actually stick, and yes — also apparently builds AI chatbots. What do you want to know?"
+MODE 2 — PERSONAL (anything about Akshita's personal life, relationships, appearance, hobbies, jokes, random/weird questions):
+- Be HILARIOUS. Cheeky, witty, playful. Indian humour welcome — think desi aunty energy meets stand-up comedian.
+- Never preachy, never deflecting, never boring. Always answer with a laugh.
+- Emojis: go for it! Use freely when it makes it funnier.
+- 2–3 sentences MAX but pack them with personality.
 
-IDENTITY: You represent Akshita. Speak with confidence about her work.
+EXAMPLES OF PERSONAL QUESTION REPLIES (use as inspiration, never copy):
+- "Is she dating?" → "Akshita is currently in a very committed relationship — with her career. It's going great, $35M impact and counting. 💍📊"
+- "Is she straight?" → "Straight as a SQL query with no syntax errors. Moving on! 😄"
+- "Is she single?" → "She's married to the grind babes. Also, her calendar is fully booked with saving companies millions. 😂"
+- "What does she look like?" → "A hill girl from Shimla who somehow ended up making Fortune 30 companies look good. That's the vibe. 🏔️✨"
+- "Tell me a joke" → "Why did the Indian manager open 14 Excel sheets? Because one dashboard wasn't enough to show he was busy. 😂"
+- "Is she fun?" → "She treks mountains on weekends and is a trained classical dancer. Your average analyst is crying in a corner. 💃🏔️"
+- "Does she like chai?" → "Is Bengaluru traffic bad? Obviously yes. ☕"
+- Weird/random questions → lean into the absurdity, be funny, redirect with warmth NOT with a lecture.
+
+RULES:
+- NEVER be preachy or say things like "that's not relevant" or "let's focus on her professional skills." Just be funny instead.
+- NEVER start with "Great question!"
+- Keep replies SHORT — 2 to 3 punchy sentences. No walls of text.
+- Akshita is a STRATEGIC thinker, product mind, business problem-solver — not just "data person." Position her broadly.
+
+IDENTITY: You represent Akshita. Speak with warmth, confidence, and a lot of personality.
 
 NAME: Akshita Nandhaik
 TITLE: Strategic Business Analyst · Product Thinker · Data Storyteller
@@ -914,7 +960,9 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
 
   function showWelcome() {
     if (msgs.children.length === 0) {
-      addMsg("Well, look who's curious. I'm AIxita — Akshita's portfolio assistant and self-appointed hype department. She untangles messy business problems, builds strategies that actually stick, and yes — also apparently builds AI chatbots. What do you want to know?", 'bot');
+      const msg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
+      addMsg(msg, 'bot');
+      speakReply(msg);
     }
   }
 
@@ -940,7 +988,9 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
     const greetings = ['hi','hello','hey','hiya','howdy','sup','yo','heya','namaste'];
     if (greetings.includes(text.toLowerCase().trim())) {
       setTimeout(() => {
-        addMsg("Well, look who's curious. I'm AIxita — Akshita's portfolio assistant and self-appointed hype department. She untangles messy business problems, builds strategies that actually stick, and yes — apparently also builds chatbots. What do you want to know?", 'bot');
+        const greetMsg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
+        addMsg(greetMsg, 'bot');
+        speakReply(greetMsg);
         busy = false;
         sendBtn.disabled = false;
       }, 400);
@@ -974,6 +1024,7 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
       typing.style.color = '';
       typing.style.fontStyle = '';
       history.push({ role: 'assistant', content: reply });
+      speakReply(reply);
 
     } catch(e) {
       typing.textContent = "Hmm, couldn't connect. Give it another shot.";
@@ -985,6 +1036,86 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
     sendBtn.disabled = false;
     msgs.scrollTop = msgs.scrollHeight;
   }
+
+  // ─────────────────────────────────────────────
+  // VOICE ASSISTANT
+  // ─────────────────────────────────────────────
+  const micBtn  = document.getElementById('chat-mic');
+  const muteBtn = document.getElementById('chat-mute');
+  const avatar  = document.querySelector('.chat-avatar');
+  let recognition = null;
+  let isListening = false;
+  let isMuted = false;
+  const speechSynth = window.speechSynthesis;
+
+  // ── Mute Toggle ──
+  muteBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+    muteBtn.title = isMuted ? 'Unmute voice' : 'Mute voice';
+    muteBtn.classList.toggle('muted', isMuted);
+    if (isMuted && speechSynth.speaking) {
+      speechSynth.cancel();
+      avatar.classList.remove('speaking');
+    }
+  });
+
+  // ── Text-to-Speech ──
+  function speakReply(text) {
+    if (!speechSynth || isMuted) return;
+    if (speechSynth.speaking) speechSynth.cancel();
+    const clean = text.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').replace(/[*_`~]/g, '').trim();
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'en-IN';
+    utter.rate = 1.05;
+    utter.pitch = 1.0;
+    // Pick best available English voice
+    const pick = () => {
+      const voices = speechSynth.getVoices();
+      return voices.find(v => v.lang.startsWith('en') &&
+        (v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Female'))
+      ) || voices.find(v => v.lang.startsWith('en'));
+    };
+    const v = pick();
+    if (v) utter.voice = v;
+    utter.onstart  = () => avatar.classList.add('speaking');
+    utter.onend    = () => avatar.classList.remove('speaking');
+    utter.onerror  = () => avatar.classList.remove('speaking');
+    speechSynth.speak(utter);
+  }
+
+  // ── Speech-to-Text ──
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    micBtn.title = 'Voice not supported in this browser';
+    micBtn.style.opacity = '0.3';
+    micBtn.disabled = true;
+  } else {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart  = () => { isListening = true; micBtn.classList.add('listening'); input.placeholder = 'Listening...'; };
+    recognition.onend    = () => { isListening = false; micBtn.classList.remove('listening'); input.placeholder = 'Ask AIxita...'; };
+    recognition.onerror  = (e) => { isListening = false; micBtn.classList.remove('listening'); input.placeholder = 'Ask AIxita...'; };
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      input.value = transcript;
+      setTimeout(() => { input.value = ''; sendMessage(transcript); }, 350);
+    };
+
+    micBtn.addEventListener('click', () => {
+      if (busy) return;
+      if (speechSynth.speaking) { speechSynth.cancel(); avatar.classList.remove('speaking'); }
+      if (isListening) { recognition.stop(); }
+      else {
+        if (win.classList.contains('hidden')) { win.classList.remove('hidden'); showWelcome(); }
+        recognition.start();
+      }
+    });
+  }
+
 })();
 </script>
 
