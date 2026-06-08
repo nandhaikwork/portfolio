@@ -409,15 +409,31 @@
   #chat-fab:hover { transform: scale(1.1); box-shadow: 0 0 36px rgba(0,229,255,0.7); }
   #chat-window {
     position: fixed; bottom: 5.5rem; right: 2rem; z-index: 1000;
-    width: 360px; max-height: 520px;
+    width: 360px; max-height: 520px; min-width: 280px; min-height: 320px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; overflow: hidden;
     display: flex; flex-direction: column;
     box-shadow: 0 8px 48px rgba(0,0,0,0.6);
     transition: opacity 0.25s, transform 0.25s;
     transform-origin: bottom right;
+    resize: both;
   }
   #chat-window.hidden { opacity: 0; transform: scale(0.85); pointer-events: none; }
+  #chat-resize-handle {
+    position: absolute; top: 0; left: 0;
+    width: 18px; height: 18px;
+    cursor: nw-resize;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #chat-resize-handle::before {
+    content: '';
+    display: block;
+    width: 10px; height: 10px;
+    border-left: 1.5px solid rgba(0,229,255,0.35);
+    border-top: 1.5px solid rgba(0,229,255,0.35);
+    border-radius: 1px;
+  }
   #chat-header {
     display: flex; align-items: center; gap: 0.75rem;
     padding: 0.9rem 1.1rem;
@@ -460,14 +476,15 @@
     align-self: flex-end; border-bottom-right-radius: 2px;
   }
   #chat-suggestions {
-    display: flex; flex-wrap: wrap; gap: 0.4rem;
-    padding: 0 1rem 0.75rem;
+    display: flex; flex-wrap: wrap; gap: 0.3rem;
+    padding: 0 0.9rem 0.6rem;
   }
   .chat-chip {
     background: rgba(0,229,255,0.06); border: 1px solid var(--border);
-    color: var(--accent); font-size: 0.68rem; padding: 0.3rem 0.7rem;
+    color: var(--accent); font-size: 0.6rem; padding: 0.2rem 0.55rem;
     border-radius: 20px; cursor: pointer; transition: background 0.2s;
-    font-family: 'Space Mono', monospace;
+    font-family: 'Space Mono', monospace; white-space: nowrap;
+    letter-spacing: 0.02em;
   }
   .chat-chip:hover { background: rgba(0,229,255,0.14); }
   #chat-input-row {
@@ -819,6 +836,7 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
 <button id="chat-fab" title="Chat with AIxita">💬</button>
 
 <div id="chat-window" class="hidden">
+  <div id="chat-resize-handle" title="Drag to resize"></div>
   <div id="chat-header">
     <div class="chat-avatar"><svg viewBox="0 0 36 36" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
   <rect width="36" height="36" rx="10" fill="#0a1628"/>
@@ -991,7 +1009,7 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
 
   function showWelcome() {
     if (msgs.children.length === 0) {
-      const msg = "Hey! I'm AIxita — Akshita's portfolio assistant. Ask me about her work, her skills, or literally anything else. I'm an open book. 📖";
+      const msg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
       addMsg(msg, 'bot');
       speakReply(msg);
     }
@@ -1019,7 +1037,7 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
     const greetings = ['hi','hello','hey','hiya','howdy','sup','yo','heya','namaste'];
     if (greetings.includes(text.toLowerCase().trim())) {
       setTimeout(() => {
-        const greetMsg = "Hey! I'm AIxita — Akshita's portfolio assistant. Ask me about her work, her skills, or literally anything else. I'm an open book. 📖";
+        const greetMsg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
         addMsg(greetMsg, 'bot');
         speakReply(greetMsg);
         busy = false;
@@ -1146,6 +1164,41 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
       }
     });
   }
+
+  // ─────────────────────────────────────────────
+  // DRAG-TO-RESIZE (top-left handle)
+  // ─────────────────────────────────────────────
+  (function() {
+    const handle = document.getElementById('chat-resize-handle');
+    const chatWin = document.getElementById('chat-window');
+    let dragging = false, startX, startY, startW, startH;
+
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startW = chatWin.offsetWidth;
+      startH = chatWin.offsetHeight;
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const dw = startX - e.clientX;
+      const dh = startY - e.clientY;
+      const newW = Math.max(280, Math.min(600, startW + dw));
+      const newH = Math.max(320, Math.min(720, startH + dh));
+      chatWin.style.width  = newW + 'px';
+      chatWin.style.height = newH + 'px';
+      chatWin.style.maxHeight = newH + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      dragging = false;
+      document.body.style.userSelect = '';
+    });
+  })();
 
 })();
 </script>
