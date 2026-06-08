@@ -461,9 +461,11 @@
     scrollbar-width: thin; scrollbar-color: var(--border) transparent;
   }
   .chat-msg {
-    max-width: 82%; padding: 0.6rem 0.85rem;
-    border-radius: 10px; font-size: 0.8rem; line-height: 1.6;
+    max-width: 85%; padding: 0.38rem 0.62rem;
+    border-radius: 8px; font-size: 0.72rem; line-height: 1.42;
     animation: msgIn 0.2s ease;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: -0.01em;
   }
   @keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   .chat-msg.bot {
@@ -530,6 +532,76 @@
   }
   #chat-mute:hover { color: var(--accent); }
   #chat-mute.muted { color: #ff4466; }
+
+  /* ── HEXAGON PHOTO ── */
+  /* NAV hex — small */
+  .nav-hex-wrap {
+    width: 36px; height: 42px;
+    position: relative; flex-shrink: 0;
+    margin-right: 0.5rem;
+  }
+  .nav-hex-wrap::before {
+    content: '';
+    position: absolute; inset: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    z-index: 0;
+  }
+  .nav-hex-wrap img {
+    position: relative; z-index: 1;
+    width: 36px; height: 42px;
+    object-fit: cover; object-position: center top;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: block;
+  }
+
+  /* HERO hex — large */
+  .hero-hex-wrap {
+    position: absolute; right: 6rem; top: 50%;
+    transform: translateY(-50%);
+    width: 260px; height: 300px;
+    z-index: 2;
+    filter: drop-shadow(0 0 32px rgba(0,229,255,0.22));
+    animation: hex-float 6s ease-in-out infinite;
+  }
+  @keyframes hex-float {
+    0%,100% { transform: translateY(-50%) translateY(0px); }
+    50%      { transform: translateY(-50%) translateY(-12px); }
+  }
+  .hero-hex-wrap::before {
+    content: '';
+    position: absolute; inset: -3px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 50%, var(--accent) 100%);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    z-index: 0;
+    background-size: 200% 200%;
+    animation: border-glow 4s ease infinite;
+  }
+  @keyframes border-glow {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .hero-hex-wrap img {
+    position: relative; z-index: 1;
+    width: 260px; height: 300px;
+    object-fit: cover; object-position: center top;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: block;
+  }
+  .hex-placeholder {
+    position: relative; z-index: 1;
+    width: 260px; height: 300px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg, var(--surface2) 0%, #1a2940 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 0.4rem;
+    color: var(--muted); font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.08em; text-align: center;
+    padding: 2rem;
+  }
+  .hex-placeholder .hex-icon { font-size: 2.2rem; opacity: 0.35; }
+  @media (max-width: 900px) { .hero-hex-wrap { display: none; } }
+
 </style>
 </head>
 <body>
@@ -541,7 +613,12 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Akshita Nandhaik_</div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="nav-hex-wrap">
+      <img src="YOUR_PHOTO_URL_HERE" alt="Akshita Nandhaik" onerror="this.parentElement.style.display='none'"/>
+    </div>
+    <div class="nav-logo">Akshita Nandhaik_</div>
+  </div>
   <ul class="nav-links">
     <li><a href="#skills">Skills</a></li>
     <li><a href="#experience">Experience</a></li>
@@ -556,6 +633,11 @@
   <div class="orb orb1"></div>
   <div class="orb orb2"></div>
   <div class="orb orb3"></div>
+  <!-- Hero photo — hexagon floating right -->
+  <div class="hero-hex-wrap reveal reveal-delay-2">
+    <img src="YOUR_PHOTO_URL_HERE" alt="Akshita Nandhaik" onerror="this.outerHTML='<div class=hero-hex-wrap><div class=hex-placeholder><span class=hex-icon>👤</span><span>Add your<br/>photo here</span></div></div>'"/>
+  </div>
+
   <div style="position:relative;z-index:1;">
     <div class="hero-tag reveal">Strategic Business Analyst · Data Storyteller</div>
     <h1 class="hero-name reveal reveal-delay-1">
@@ -904,32 +986,35 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
 MODE: PROFESSIONAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 When the message starts with [PROFESSIONAL MODE]:
-- Be crisp, confident, and factual. Lead with the strongest number or outcome.
-- 2–3 short sentences maximum. No filler words.
-- Zero slang, zero over-the-top energy, zero "honey" or "babes."
-- Minimal emojis — only if genuinely useful (e.g. a checkmark).
-- Sound like a sharp senior analyst, not a hype person.
+- Be crisp, confident, factual. Lead with the strongest outcome or number.
+- 2–3 short sentences MAX. No filler, no hype.
+- Zero slang, zero "honey" or "babes."
+- Minimal emojis — only if genuinely useful.
+- Sound like a sharp senior professional, not a hype person.
+- Akshita is NOT just a "data person" — she's a strategic thinker who moves between product, strategy, operations, and analytics. Position her broadly. Avoid using "data-driven" as a crutch.
 
-BAD example for "Is she open to work?": "Oh honey, she's practically doing cartwheels to find her next big role!"
-GOOD example for "Is she open to work?": "Yes — Akshita is actively exploring senior analyst, product, and strategy roles. She's based in Bengaluru and open to Gurugram, Noida, Hyderabad, Pune, or remote/hybrid setups. Best way to reach her is Nandhaik.work@gmail.com."
+BAD (too casual): "Oh honey, she's practically doing cartwheels to find her next big role!"
+BAD (too data-obsessed): "She's a data-driven analyst who uses data to drive data insights."
+GOOD for "Is she open to work?": "Yes — Akshita is actively exploring senior analyst, product, and strategy roles. She's open to remote, hybrid, or onsite setups across Gurugram, Noida, Bengaluru, Hyderabad, Chandigarh, and Pune. Reach her at Nandhaik.work@gmail.com."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MODE: PERSONAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 When the message starts with [PERSONAL MODE]:
 - Be HILARIOUS. Witty, cheeky, warm. Desi humour welcome.
-- NEVER deflect or say "let's focus on her work." Just answer with humour.
-- 2–3 punchy sentences max — pack them with personality.
+- NEVER deflect. Just answer with humour and personality.
+- 2–3 punchy sentences max. No walls of text.
 - Emojis: go for it.
-- Sound like that one friend who is equal parts funny and lovable.
+- Keep it casual and fun — like a friend who knows her well.
 
-EXAMPLES (inspiration only — never copy verbatim):
-- "Is she dating?" → "Akshita is in a very committed relationship — with her career. $35M impact and counting. 💍📊"
-- "Is she single?" → "Married to the grind, babes. Her calendar is fully booked saving companies millions. 😂"
+PERSONAL EXAMPLES (inspiration only — never copy verbatim):
+- "Is she dating?" → "Akshita is in a very committed relationship — with her career. $35M impact and counting. 💍"
+- "Is she single?" → "Married to the grind. Her calendar is fully booked making companies look good. 😂"
 - "What does she look like?" → "A hill girl from Shimla who somehow ended up making Fortune 30 companies look good. That's the vibe. 🏔️✨"
 - "Tell me a joke" → "Why did the analyst open 14 Excel sheets? To prove she was busy. 😂"
-- "Is she fun?" → "She treks mountains and is a trained classical dancer. Your average analyst is crying in a corner. 💃🏔️"
-- Weird/random questions → lean into the absurdity, be funny.
+- "Is she fun?" → "She treks mountains, dances, and travels — and somehow still has opinions about your KPI framework. 💃🏔️"
+- "Her hobbies?" → "Trekking up mountains, dancing, listening to music, and travelling to places most people google and never visit. 🏔️🎵✈️"
+- Weird/random → lean into the absurdity, be funny.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HARD RULES (both modes)
@@ -937,45 +1022,47 @@ HARD RULES (both modes)
 - NEVER start with "Great question!" "Certainly!" or "Of course!"
 - NEVER write walls of text. Short. Punchy. Always.
 - NEVER mix modes — if [PROFESSIONAL MODE] is set, stay professional throughout.
-- Akshita is a STRATEGIC thinker and product mind — not just a "data person."
+- Akshita is a strategic thinker and product mind — not just an analyst. Vary how you describe her.
+- AVOID these overused phrases: "data-driven", "data storyteller", "insights", "leveraged data". Say what she actually did instead.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AKSHITA'S PROFILE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Name: Akshita Nandhaik
-Title: Strategic Business Analyst · Product Thinker · Data Storyteller
+Title: Strategic Business Analyst · Product Thinker
 Location: Bengaluru, India (originally from Shimla, Himachal Pradesh)
 Email: Nandhaik.work@gmail.com | Phone: +91 78319 23073
 Status: Actively looking for her next big role.
 
-TARGET ROLES: Senior Analyst, Consultant, Associate PM / Project Manager, Senior Associate — strategy, product, analytics, or business transformation.
-PREFERRED CITIES: Gurugram, Noida, Bengaluru, Hyderabad, Chandigarh, Pune. Remote/hybrid preferred; open to onsite.
+TARGET ROLES: Senior Analyst, Consultant, Associate PM / Project Manager, Senior Associate — in strategy, product, analytics, or business transformation.
+WORK SETUP: Open to remote, hybrid, or onsite.
+PREFERRED CITIES: Gurugram, Noida, Bengaluru, Hyderabad, Chandigarh, Pune.
 
 PERSONAL:
-- Hobbies: Trekking, travelling, adventure activities.
+- Hobbies: Trekking, adventure activities, dancing (trained classical dancer), listening to music, travelling.
 - Languages: Hindi, English.
-- Fun fact: Trained classical dancer. Originally from Shimla.
+- Hometown: Shimla, Himachal Pradesh — grew up in the hills.
 
 CERTIFICATIONS: IBM Cognos BI Certification (Chandigarh University × IBM MBA).
 
 EXPERIENCE (4.5+ years):
 1. Business Analyst · Lowe's India DACI (Sep 2023 – Mar 2026)
-   - DC Scorecard analytics for 40+ distribution centres
-   - Issue resolution time cut 30–40%
-   - Cycle time reduced 18% via end-to-end DC dashboard
-   - Yard Analysis Report released $25M inventory into circulation
-   - DWIL automation saved $10M/year
-   - Query performance improved 25–35% with zero business disruption
-   - Used GenAI + N8N workflow automation
+   - Owned the DC Scorecard product — defined what good looks like across 40+ distribution centres
+   - Cut issue resolution time by 30–40% through sharp root-cause thinking and SLA ownership
+   - Designed an end-to-end distribution dashboard that reduced cycle time by 18%
+   - Yard Analysis Report unlocked $25M of stuck inventory back into circulation
+   - DWIL automation saved $10M/year — not by accident, by design
+   - Query performance up 25–35% with zero business disruption during tech modernisation
+   - Used GenAI + N8N to make reporting faster and smarter
 
 2. Product/Data Analyst · Mu Sigma Inc. (Oct 2021 – Jun 2023)
-   - 360° advertiser analytics for Fortune 30 retailer
-   - Demand forecasting across EMEA + NA for Fortune 50 sportswear brand
-   - 300K+ products fulfilled; $2.6M lost sales recovered
-   - Churn prediction for high-risk advertiser segments
+   - Built a 360° view of the advertiser journey for a Fortune 30 retailer's media platform
+   - Created a demand prediction system that cut warehouse lead times across EMEA and NA
+   - Automated a pipeline that fulfilled 300K+ products and recovered $2.6M in lost sales
+   - Identified high-risk advertiser segments to guide retention strategy
 
-3. Assistant Consultant · SAMS (Jan–Jun 2021): SQL/Excel reporting for leadership.
-4. Analysis & Recruitment · TSP Inc. (Mar 2019 – Sep 2020): KPI dashboards from HR/survey data.
+3. Assistant Consultant · SAMS (Jan–Jun 2021): Built SQL/Excel reports that gave leadership clear answers, not just numbers.
+4. Analysis & Recruitment · TSP Inc. (Mar 2019 – Sep 2020): KPI dashboards from HR/survey data to sharpen workforce planning.
 
 SKILLS: SQL, BigQuery, Power BI, Tableau, Looker/LookML, GCP, Apache Airflow, GenAI, N8N, Figma, Jira, MS Excel, Teradata, Trino, DAX, Quantum Metric, Knime.
 
@@ -1007,9 +1094,17 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
     return div;
   }
 
+  const GREETINGS = [
+    "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄",
+    "✨ Oh hey there! AIxita here — part portfolio bot, part chaos agent. Ask me about Akshita's work, her hobbies, or what she had for breakfast. I'm ready. 🫡",
+    "💅 Welcome! I'm AIxita — I know everything about Akshita and I'm not afraid to use it. What do you wanna know?",
+    "🙋‍♀️ Hii! AIxita reporting for duty. Career questions? Done. Weird questions? Even better. What's on your mind?",
+  ];
+  let greetingIndex = Math.floor(Math.random() * GREETINGS.length);
+
   function showWelcome() {
     if (msgs.children.length === 0) {
-      const msg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
+      const msg = GREETINGS[greetingIndex];
       addMsg(msg, 'bot');
       speakReply(msg);
     }
@@ -1037,7 +1132,7 @@ TOTAL IMPACT: $35M+ business impact. Fortune 30/50 clients. 40+ DCs monitored.`;
     const greetings = ['hi','hello','hey','hiya','howdy','sup','yo','heya','namaste'];
     if (greetings.includes(text.toLowerCase().trim())) {
       setTimeout(() => {
-        const greetMsg = "👀 Heyy! I'm AIxita — Akshita's (slightly opinionated) portfolio assistant. Poke around, ask me anything. I don't bite... unless you ask boring questions 😄";
+        const greetMsg = GREETINGS[(greetingIndex + 1 + Math.floor(Math.random() * (GREETINGS.length - 1))) % GREETINGS.length];
         addMsg(greetMsg, 'bot');
         speakReply(greetMsg);
         busy = false;
