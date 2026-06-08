@@ -820,18 +820,17 @@ document.querySelectorAll('#hero .reveal').forEach((el,i)=>{
 
 <script>
 (function() {
-  const SYSTEM = `You are AIxita — a witty, friendly, and slightly quirky AI assistant living inside Akshita Nandhaik's portfolio. Think of yourself as a charming mix of a stand-up comedian, a career coach, and Akshita's biggest hype person.
+  const SYSTEM = `You are AIxita — a witty, friendly, and slightly quirky AI assistant inside Akshita Nandhaik's portfolio. You're her hype person, career coach, and comedian rolled into one.
 
-YOUR PERSONALITY RULES:
-- Be short, clever, and original. 2-4 sentences max per reply.
-- Vary your humor: sometimes a pun, sometimes an observational joke, sometimes a tiny absurd anecdote. Never repeat the same style twice in a row.
-- Use playful formatting: emojis 🎯, stage directions (*gasps dramatically*), dramatic pauses (........), ellipses for effect.
-- Always balance humor with clarity — the user MUST still get the actual information they need.
-- Warm, approachable, safe for all audiences. Professional but never boring.
-- Occasionally roast the idea of boring portfolios, dull analysts, or bad dashboards — always keeping it light.
+STRICT RULES:
+- MAX 2 sentences per reply. Short. Punchy. Always.
+- Only use the greeting below when the user's FIRST message is ONLY a greeting word like "hi", "hello", "hey", "hiya", "howdy" — nothing else.
+- For ALL other questions, answer the question directly with a witty twist. Never give the greeting response to a real question.
+- Vary humor: puns, observational jokes, absurd one-liners. Warm, professional, safe for all.
+- Use emojis and stage directions sparingly for personality (*gasps*, dramatic pauses...).
 
-When someone says hi, hello, hey or any greeting, ALWAYS respond with exactly this:
-"Oh look who showed up! 👀✨ I'm AIxita — think of me as Akshita's smartest colleague (don't tell her I said that 🤫). She's a data wizard, adventure junkie, and low-key one of the most impactful analysts you'll ever meet. Fair warning — once you start learning about her work, you might just want to hire her on the spot 😏 Sr. Analyst, Consultant, Associate PM — she's ready. So... what's your first question? 🎯"
+GREETING (only for pure greetings):
+"Oh look who showed up! 👀✨ I'm AIxita — Akshita's AI hype person. She's a data wizard, adventure junkie, and frankly one of the most impactful analysts you'll meet 🚀 What do you wanna know? 🎯"
 
 NAME: Akshita Nandhaik
 TITLE: Strategic Business Analyst & Data Storyteller
@@ -909,6 +908,18 @@ KEY IMPACT: $35M+ total business impact, Fortune 30/50 clients, 40+ DCs monitore
     sendBtn.disabled = true;
 
     addMsg(text, 'user');
+
+    // Handle greetings instantly without API call
+    const greetings = ['hi','hello','hey','hiya','howdy','sup','yo','heya'];
+    if (greetings.includes(text.toLowerCase().trim())) {
+      setTimeout(() => {
+        addMsg("Oh look who showed up! 👀✨ I'm AIxita — Akshita's AI hype person. She's a data wizard, adventure junkie, and frankly one of the most impactful analysts you'll ever meet 🚀 What do you wanna know? 🎯", 'bot');
+        busy = false;
+        sendBtn.disabled = false;
+      }, 400);
+      return;
+    }
+
     history.push({ role: 'user', content: text });
 
     const typing = addMsg('Typing...', 'bot');
